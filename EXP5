@@ -1,0 +1,94 @@
+---------Dining Philosopher--------
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <vector>
+#include <chrono>
+using namespace std;
+
+mutex forks[5];
+mutex mtx;
+condition_variable cv[5];
+bool ready[5] = {false, false, false, false, false};
+int completed = 0;
+void philosopher(int id) {
+    unique_lock<mutex> lock(mtx);
+    cv[id].wait(lock, [&]() { return ready[id]; });
+    lock.unlock();
+    if (id == 1) {
+        forks[1].lock();
+        cout << "Fork 1 taken by Philosopher 1" << endl;
+        forks[2].lock();
+        cout << "Fork 2 taken by Philosopher 2" << endl;
+        forks[3].lock();
+        cout << "Fork 3 taken by Philosopher 3" << endl;
+        cout << "Philosopher 4 is waiting for fork 4" << endl;
+    }
+    else if (id == 0) {
+        forks[4].lock();
+        cout << "Fork 4 taken by Philosopher 0" << endl;
+        cout << "Philosopher 1 is waiting for Fork 1" << endl;
+        cout << "Philosopher 2 is waiting for Fork 2" << endl;
+        cout << "Philosopher 3 is waiting for Fork 3" << endl;
+        cout << "Philosopher 4 is waiting for fork 3" << endl;
+    }
+    else if (id == 2) {
+        cout << "Philosopher 1 completed his dinner" << endl;
+        forks[1].unlock();
+        forks[2].unlock();
+        cout << "Philosopher 1 released fork 1 and fork 2" << endl;
+
+        forks[1].lock();
+        cout << "Fork 1 taken by Philosopher 2" << endl;
+        forks[2].lock();
+        cout << "Fork 2 taken by Philosopher 3" << endl;
+        cout << "Philosopher 4 is waiting for fork 3" << endl;
+    }
+    else if (id == 3) {
+        cout << "Philosopher 2 completed his dinner" << endl;
+        cout << "Philosopher 3 completed his dinner" << endl;
+        forks[1].unlock();
+        forks[2].unlock();
+        cout << "Philosopher 2 released fork 1 and fork 2" << endl;
+        forks[3].lock();
+        cout << "Fork 3 taken by Philosopher 4" << endl;
+    }
+    else if (id == 4) {
+        forks[3].unlock();
+        forks[2].unlock();
+        cout << "Philosopher 0 completed his dinner" << endl;
+        forks[0].unlock();
+        forks[4].unlock();
+        cout << "Philosopher 0 released fork 0 and fork 4" << endl;
+        cout << "Philosopher 4 completed his dinner" << endl;
+        forks[3].unlock();
+        forks[4].unlock();
+        cout << "Philosopher 4 released fork 3 and fork 4" << endl;
+    }
+    lock.lock();
+    completed++;
+}
+
+int main() {
+    thread phils[5];
+    for (int i = 0; i < 5; ++i)
+        phils[i] = thread(philosopher, i);
+    vector<int> sequence = {1, 0, 2, 3, 4};
+    for (int i = 0; i < sequence.size(); ++i) {
+        {
+            unique_lock<mutex> lock(mtx);
+            ready[sequence[i]] = true;
+        }
+        cv[sequence[i]].notify_one();
+        this_thread::sleep_for(chrono::milliseconds(500));
+        if (i >= 1) {
+            cout << "\nTill now number of philosophers completed dinner: " << completed << "\n" << endl;
+        }
+    }
+    for (int i = 0; i < 5; ++i)
+        phils[i].join();
+
+    cout << "\nTotal number of philosophers completed dinner: " << completed << endl;
+    return 0;
+}
