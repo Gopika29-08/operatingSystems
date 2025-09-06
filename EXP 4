@@ -1,0 +1,195 @@
+
+--------FCFS-------
+#include <iostream> 
+#include <iomanip> 
+#include <string> 
+using namespace std; 
+ 
+int main() { 
+    int n; 
+    string process_id[20]; 
+    int burst_time[20], waiting_time[20], turnaround_time[20]; 
+    int total_wt = 0, total_tat = 0; 
+ 
+    cout << "Enter the number of processes: "; 
+    cin >> n; 
+ 
+    cout << "Enter Process ID and Burst Time for each process:\n"; 
+    for (int i = 0; i < n; i++) { 
+        cout << "Process " << i + 1 << " ID: "; 
+        cin >> process_id[i]; 
+        cout << "Burst Time for Process " << process_id[i] << ": "; 
+        cin >> burst_time[i]; 
+    } 
+ 
+    waiting_time[0] = 0; 
+ 
+    for (int i = 1; i < n; i++) { 
+        waiting_time[i] = waiting_time[i - 1] + burst_time[i - 1]; 
+    } 
+ 
+    for (int i = 0; i < n; i++) { 
+        turnaround_time[i] = waiting_time[i] + burst_time[i]; 
+        total_wt += waiting_time[i]; 
+
+ 
+        total_tat += turnaround_time[i]; 
+    } 
+ 
+    cout << "\nProcess ID\tBurst Time\tWaiting Time\tTurnaround Time\n"; 
+    for (int i = 0; i < n; i++) { 
+        cout << setw(10) << process_id[i] 
+             << "\t" << setw(10) << burst_time[i] 
+             << "\t" << setw(12) << waiting_time[i] 
+             << "\t" << setw(15) << turnaround_time[i] << "\n"; 
+    } 
+ 
+    cout << fixed << setprecision(2); 
+    cout << "\nAverage Waiting Time: " << (float)total_wt / n; 
+    cout << "\nAverage Turnaround Time: " << (float)total_tat / n << "\n"; 
+ 
+    return 0; 
+} 
+
+
+------SJF-------
+#include <iostream>
+#include <iomanip>
+#include <string>
+using namespace std;
+
+int main() {
+    int n;
+    string process_id[20];
+    int burst_time[20], waiting_time[20], turnaround_time[20];
+    int total_wt = 0, total_tat = 0;
+
+    cout << "Enter the number of processes: ";
+    cin >> n;
+
+    cout << "Enter Process ID and Burst Time for each process:\n";
+    for (int i = 0; i < n; i++) {
+        cout << "Process " << i + 1 << " ID: ";
+        cin >> process_id[i];
+        cout << "Burst Time for Process " << process_id[i] << ": ";
+        cin >> burst_time[i];
+    }
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (burst_time[j] > burst_time[j + 1]) {
+              
+                int temp_bt = burst_time[j];
+                burst_time[j] = burst_time[j + 1];
+                burst_time[j + 1] = temp_bt;
+
+               
+                string temp_id = process_id[j];
+                process_id[j] = process_id[j + 1];
+                process_id[j + 1] = temp_id;
+            }
+        }
+    }
+
+    waiting_time[0] = 0;
+    for (int i = 1; i < n; i++) {
+        waiting_time[i] = waiting_time[i - 1] + burst_time[i - 1];
+    }
+
+    for (int i = 0; i < n; i++) {
+        turnaround_time[i] = waiting_time[i] + burst_time[i];
+        total_wt += waiting_time[i];
+        total_tat += turnaround_time[i];
+    }
+
+    cout << "\nProcess ID\tBurst Time\tWaiting Time\tTurnaround Time\n";
+    for (int i = 0; i < n; i++) {
+        cout << setw(10) << process_id[i]
+             << "\t" << setw(10) << burst_time[i]
+             << "\t" << setw(12) << waiting_time[i]
+             << "\t" << setw(15) << turnaround_time[i] << "\n";
+    }
+
+  
+    cout << "\nGantt Chart:\n|";
+    for (int i = 0; i < n; i++) {
+        cout << " " << process_id[i] << " |";
+    }
+
+    cout << "\n0";
+    for (int i = 0; i < n; i++) {
+        cout << setw(5) << turnaround_time[i];
+    }
+
+    cout << fixed << setprecision(2);
+    cout << "\n\nAverage Waiting Time: " << (float)total_wt / n;
+    cout << "\nAverage Turnaround Time: " << (float)total_tat / n << "\n";
+
+    return 0;
+}
+
+------Round Robin------
+#include <iostream> 
+#include <iomanip> 
+#include <string> 
+using namespace std; 
+struct Process { 
+    string pid; 
+    int atime; 
+    int btime; 
+    int rtime; 
+    int wtime; 
+    int ttime; 
+}; 
+int main() { 
+    int n, tq, time = 0; 
+    bool done; 
+    Process p[20]; 
+    float total_wt = 0, total_tat = 0; 
+    cout << "Enter number of processes: "; 
+    cin >> n; 
+    cout << "Enter time quantum: "; 
+    cin >> tq; 
+ 
+    for (int i = 0; i < n; i++) { 
+
+        cout << "Enter Process ID: "; 
+        cin >> p[i].pid; 
+        cout << "Enter Arrival Time for " << p[i].pid << ": "; 
+        cin >> p[i].atime; 
+        cout << "Enter Burst Time for " << p[i].pid << ": "; 
+        cin >> p[i].btime; 
+        p[i].rtime = p[i].btime; 
+        p[i].wtime = 0; 
+        p[i].ttime = 0; 
+    } 
+    do { 
+        done = true; 
+        for (int i = 0; i < n; i++) { 
+            if (p[i].rtime > 0 && p[i].atime <= time) { 
+                done = false; 
+                if (p[i].rtime > tq) { 
+                    time += tq; 
+                    p[i].rtime -= tq; 
+                } else { 
+                    time += p[i].rtime; 
+                    p[i].wtime = time - p[i].btime - p[i].atime; 
+                    p[i].rtime = 0; 
+                    p[i].ttime = p[i].wtime + p[i].btime; 
+                }  } } } while (!done); 
+ 
+    cout << "\nProcess ID\tArrival Time\tBurst Time\tWaiting Time\tTurnaround Time\n"; 
+    for (int i = 0; i < n; i++) { 
+        cout << setw(10) << p[i].pid 
+             << "\t" << setw(12) << p[i].atime 
+             << "\t" << setw(10) << p[i].btime 
+             << "\t" << setw(12) << p[i].wtime 
+             << "\t" << setw(15) << p[i].ttime << "\n"; 
+        total_wt += p[i].wtime; 
+        total_tat += p[i].ttime; 
+    } 
+    cout << fixed << setprecision(2); 
+    cout << "\nAverage Waiting Time: " << (total_wt / n) << " ms"; 
+    cout << "\nAverage Turnaround Time: " << (total_tat / n) << " ms\n"; 
+    return 0; 
+} 
