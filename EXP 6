@@ -1,0 +1,67 @@
+-------Bankers Algorithm-------
+#include <iostream>
+#include <vector>
+using namespace std;
+int main() {
+    int P, R;
+    cout << "Enter number of processes: ";
+    cin >> P;
+    cout << "Enter number of resources: ";
+    cin >> R;
+    vector<vector<int>> Alloc(P, vector<int>(R));
+    vector<vector<int>> Max(P, vector<int>(R));
+    vector<vector<int>> Need(P, vector<int>(R));
+    vector<int> Avail(R);
+    cout << "Enter Allocation Matrix:\n";
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            cin >> Alloc[i][j];
+    cout << "Enter Maximum Matrix:\n";
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            cin >> Max[i][j];
+    cout << "Enter Available Resources:\n";
+    for (int j = 0; j < R; j++)
+        cin >> Avail[j];
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            Need[i][j] = Max[i][j] - Alloc[i][j];
+    vector<bool> Finish(P, false);
+    vector<int> SafeSequence;
+    vector<int> Work = Avail;
+    while (true) {
+        bool found = false;
+        for (int i = 0; i < P; i++) {
+            if (!Finish[i]) {
+                bool canRun = true;
+                for (int j = 0; j < R; j++) {
+                    if (Need[i][j] > Work[j]) {
+                        canRun = false;
+                        break;
+                    }
+                }
+                if (canRun) {
+                    for (int j = 0; j < R; j++)
+                        Work[j] += Alloc[i][j];
+                    Finish[i] = true;
+                    SafeSequence.push_back(i);
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+            break;
+    }
+    bool isSafe = true;
+    for (bool done : Finish)
+        if (!done)
+            isSafe = false;
+    if (isSafe) {
+        cout << "System is in a SAFE STATE.\nSafe sequence: ";
+        for (int i = 0; i < SafeSequence.size(); i++)
+            cout << "P" << SafeSequence[i] << (i < SafeSequence.size() - 1 ? " -> " : "\n");
+    } else {
+        cout << "System is in an UNSAFE STATE. No safe sequence exists.\n";
+    }
+    return 0;
+}
