@@ -1,0 +1,50 @@
+#include <bits/stdc++.h>
+using namespace std;
+void FCFS(vector<int> req, int head) {
+    int st=0; cout<<"\nFCFS: ";
+    for(int r:req){ cout<<r<<" "; st+=abs(head-r); head=r; }
+    cout<<"\nSeek Time="<<st<<endl;
+}
+void SSTF(vector<int> req,int head){
+    int n=req.size(),st=0; vector<bool>d(n,false);
+    cout<<"\nSSTF: ";
+    for(int i=0;i<n;i++){
+        int idx=-1,md=1e9;
+        for(int j=0;j<n;j++) if(!d[j]&&abs(req[j]-head)<md){md=abs(req[j]-head);idx=j;}
+        st+=abs(head-req[idx]); head=req[idx]; d[idx]=true; cout<<head<<" "; }
+    cout<<"\nSeek Time="<<st<<endl;
+}
+void SCAN(vector<int> req,int head,int disk,string dir){
+    vector<int>L,R; for(int r:req)(r<head?L:R).push_back(r);
+    sort(L.begin(),L.end()); sort(R.begin(),R.end());
+    int st=0,c=head; cout<<"\nSCAN("<<dir<<"): ";
+    if(dir=="left"){ for(int i=L.size()-1;i>=0;i--){cout<<L[i]<<" "; 
+    st+=abs(c-L[i]); c=L[i];}
+        if(!L.empty()){st+=c; c=0;} for(int x:R){cout<<x<<" "; st+=abs(c-x); c=x;}
+    } else { for(int x:R){cout<<x<<" "; st+=abs(c-x); c=x;}
+        if(!R.empty()){st+=disk-1-c; c=disk-1;} for(int i=L.size()-1;i>=0;i--)
+   {cout<<L[i]<<" "; st+=abs(c-L[i]); c=L[i];}}
+    cout<<"\nSeek Time="<<st<<endl;
+}
+void CSCAN(vector<int> req,int head,int disk){
+    vector<int>L,R; for(int r:req)(r<head?L:R).push_back(r);
+    sort(L.begin(),L.end()); sort(R.begin(),R.end());
+    int st=0,c=head; cout<<"\nC-SCAN: ";
+    for(int x:R){cout<<x<<" "; st+=abs(c-x); c=x;}
+    if(!L.empty()){st+=disk-1-c; st+=disk-1; c=0;}
+    for(int x:L){cout<<x<<" "; st+=abs(c-x); c=x;}
+    cout<<"\nSeek Time="<<st<<endl;
+}
+int main(){
+    int disk, head, n;
+    cout<<"Enter disk size: "; cin>>disk;
+    cout<<"Enter initial head: "; cin>>head;
+    cout<<"Enter number of requests: "; cin>>n;
+    vector<int> req(n);
+    cout<<"Enter requests: ";
+    for(int i=0;i<n;i++) cin>>req[i];
+    FCFS(req,head);
+    SSTF(req,head);
+    SCAN(req,head,disk,"left");
+    CSCAN(req,head,disk);
+}
