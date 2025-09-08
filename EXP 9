@@ -1,0 +1,65 @@
+#include <bits/stdc++.h>
+using namespace std;
+struct Record { int id; char data[50]; };
+vector<Record> indexTable;
+void seqWrite() {
+    int id; string d;
+    cout<<"Enter ID: "; cin>>id;
+    cout<<"Enter Data: "; cin>>d;
+    ifstream fin("sequential.txt"); int eid; string ed;
+    while(fin>>eid>>ed) if(eid==id){ cout<<"ID exists!\n"; return; }
+    ofstream fout("sequential.txt",ios::app);
+    fout<<id<<" "<<d<<"\n";
+}
+void seqRead() {
+    ifstream fin("sequential.txt"); int id; string d;
+    if(!fin){ cout<<"File not found!\n"; return; }
+    while(fin>>id>>d) cout<<id<<" "<<d<<"\n";
+}
+void dirWrite() {
+    fstream f("direct.dat",ios::in|ios::out|ios::binary);
+    if(!f){ f.open("direct.dat",ios::out|ios::binary); f.close();
+     f.open("direct.dat",ios::in|ios::out|ios::binary);}
+    Record r; string d;
+    cout<<"Enter ID: "; cin>>r.id;
+    cout<<"Enter Data: "; cin>>d;
+    strncpy(r.data,d.c_str(),sizeof(r.data)); r.data[49]='\0';
+    f.seekp(r.id*sizeof(Record)); f.write((char*)&r,sizeof(r));
+}
+void dirRead() {
+    fstream f("direct.dat",ios::in|ios::binary);
+    if(!f){ cout<<"File not found!\n"; return; }
+    int id; cout<<"Enter ID: "; cin>>id;
+    Record r; f.seekg(id*sizeof(Record)); 
+    f.read((char*)&r,sizeof(r));
+    if(!f.fail()) cout<<"Found: "<<r.id<<" "<<r.data<<"\n"; 
+    else cout<<"No record\n";
+}
+void loadIdx(){ ifstream fin("indexed.txt"); Record r; 
+while(fin>>r.id>>r.data) indexTable.push_back(r); }
+void saveIdx(){ ofstream fout("indexed.txt"); 
+for(auto&r:indexTable) fout<<r.id<<" "<<r.data<<"\n"; }
+void idxInsert() {
+    Record r; string d; cout<<"Enter ID: "; cin>>r.id; 
+    cout<<"Enter Data: "; cin>>d;
+    for(auto &x:indexTable) if(x.id==r.id){ cout<<"ID exists!\n"; return; }
+    strncpy(r.data,d.c_str(),sizeof(r.data)); r.data[49]='\0'; 
+    indexTable.push_back(r); saveIdx();
+}
+void idxSearch(){
+    int id; cout<<"Enter ID: "; cin>>id;
+    for(auto&r:indexTable) if(r.id==id){ cout<<"Found: "<<r.id
+        <<" "<<r.data<<"\n"; return; }
+    cout<<"Not found!\n";
+}
+int main() {
+    loadIdx(); int ch;
+    do {
+        cout<<"\n1.SeqWrite 2.SeqRead 3.DirWrite 4.DirRead 
+        5.IdxInsert 6.IdxSearch 0.Exit\nChoice: ";
+        cin>>ch;
+        switch(ch){ case 1:seqWrite();break; case 2:seqRead();break;
+        case 3:dirWrite();break;case 4:dirRead();break;
+         case 5:idxInsert();break; case 6:idxSearch();break; }
+    } while(ch!=0);
+}
