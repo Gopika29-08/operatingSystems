@@ -1,0 +1,41 @@
+#include <bits/stdc++.h>
+using namespace std;
+void fifo(int f, vector<int>& pg) {
+    vector<int> fr(f, -1); int pf=0, pos=0;
+    for (int x: pg) {
+        if (find(fr.begin(), fr.end(), x)==fr.end()) {
+            fr[pos]=x; pos=(pos+1)%f; pf++ }
+    cout<<"FIFO Page Faults = "<<pf<<"\n";
+}
+void lru(int f, vector<int>& pg) {
+    vector<int> fr; int pf=0;
+    for (int x: pg) {
+        auto it=find(fr.begin(), fr.end(), x);
+        if(it==fr.end()){ 
+            if(fr.size()<f) fr.push_back(x);
+            else { fr.erase(fr.begin()); fr.push_back(x); }
+            pf++;
+        } else { fr.erase(it); fr.push_back(x); } }
+    cout<<"LRU Page Faults = "<<pf<<"\n";
+}
+void optimal(int f, vector<int>& pg) {
+    vector<int> fr; int pf=0, n=pg.size();
+    for(int i=0;i<n;i++){
+        if(find(fr.begin(),fr.end(),pg[i])==fr.end()){
+            if(fr.size()<f) fr.push_back(pg[i]);
+            else {
+                int idx=-1,farthest=-1;
+                for(int j=0;j<f;j++){
+                    int next=find(pg.begin()+i+1,pg.end(),fr[j])-pg.begin();
+                    if(next==n){ idx=j; break; }
+                    if(next>farthest){ farthest=next; idx=j; } }
+                fr[idx]=pg[i];}
+            pf++;}}
+    cout<<"Optimal Page Faults = "<<pf<<"\n";
+}
+int main(){
+    int f,n; cout<<"Frames: "; cin>>f;
+    cout<<"Pages: "; cin>>n;
+    vector<int> pg(n); for(int i=0;i<n;i++) cin>>pg[i];
+    fifo(f,pg); lru(f,pg); optimal(f,pg);
+}
