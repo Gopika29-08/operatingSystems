@@ -1,0 +1,39 @@
+#include <vector>
+using namespace std;
+void allocate(vector<int> blockSize, int b, 
+    vector<int> processSize, int p, string type) {
+    vector<int> allocated(b, 0), assign(p, -1), frag(p, 0), usedBlockSize(p, 0);
+    for (int i = 0; i < p; i++) {
+        int idx = -1;
+        for (int j = 0; j < b; j++) {
+            if (!allocated[j] && blockSize[j] >= processSize[i]) {
+                if (type == "First") { idx = j; break; }
+                if (type == "Best" && (idx == -1 || blockSize[j] < blockSize[idx])) idx = j;
+                if (type == "Worst" && (idx == -1 || blockSize[j] > blockSize[idx])) idx = j;} }
+        if (idx != -1) {
+            assign[i] = idx;
+            frag[i] = blockSize[idx] - processSize[i];
+            usedBlockSize[i] = blockSize[idx];
+            allocated[idx] = 1; } }
+    cout << "\n" << type << " Fit Allocation:\n";
+    cout << "Process\tP.Size\tBlock\tB.Size\tFragment\n";
+    for (int i = 0; i < p; i++) {
+        cout << i + 1 << "\t" << processSize[i] << "\t";
+        if (assign[i] != -1)
+            cout << assign[i] + 1 << "\t" << usedBlockSize[i] << "\t" << frag[i] << "\n";
+        else
+            cout << "Not Allocated\t--\t--\n"; }}
+int main() {
+    int b, p;
+    cout << "Enter number of blocks: "; cin >> b;
+    vector<int> blockSize(b);
+    cout << "Enter sizes of blocks:\n";
+    for (int i = 0; i < b; i++) cin >> blockSize[i];
+    cout << "Enter number of processes: "; cin >> p;
+    vector<int> processSize(p);
+    cout << "Enter sizes of processes:\n";
+    for (int i = 0; i < p; i++) cin >> processSize[i];
+    allocate(blockSize, b, processSize, p, "First");
+    allocate(blockSize, b, processSize, p, "Best");
+    allocate(blockSize, b, processSize, p, "Worst");
+}
